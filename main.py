@@ -76,3 +76,37 @@ async def postProperty(req:Property):
         return {"error" : "forbidden action pls login "}
     return{"message":"post successful"}
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+# below lines are experimental yet working
+from fastapi import FastAPI, File, UploadFile, Request
+from fastapi.templating import Jinja2Templates
+import os
+from typing import List
+templates = Jinja2Templates(directory=".")
+@app.post("/upload/")
+async def upload_files(files: List[UploadFile] = File(...)):
+    print(files)
+    # Create a directory if it doesn't exist
+    os.makedirs("uploaded_images", exist_ok=True)
+    # Process uploaded files
+    for file in files:
+        contents = await file.read()
+        # Save files to the "uploaded_images" directory
+        with open(f"uploaded_images/{file.filename}", "wb") as f:
+            f.write(contents)
+    return {"message": "Files uploaded successfully"}
+@app.get("/")
+async def show_upload_form(request: Request):
+    return templates.TemplateResponse("upload_form.html", {"request": request})

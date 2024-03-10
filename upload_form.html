@@ -4,14 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>File Upload</title>
-</head>
+    </head>
 <body>
-    <h1>Upload Files</h1>
+    <form id="propertyDetails" enctype="multipart/form-data">
+        <input type="text" name="address" placeholder="Enter the address">
+        <input type="number" name="numberofpeople" 
+    </form>
+    <h1>Add Property Images</h1>
     <form id="uploadForm" enctype="multipart/form-data">
         <input type="file" id="fileInput" name="files" multiple>
         <button type="submit">Upload</button>
     </form>
-
     <script>
         // Function to handle form submission
         async function handleSubmit(event) {
@@ -28,13 +31,13 @@
                     body: formData
                 });
                 if (response.ok) {
-                    alert('Files uploaded successfully');
+                    console.log('Files uploaded successfully');
                 } else {
                     throw new Error('Failed to upload files');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('An error occurred while uploading files');
+                // alert('An error occurred while uploading files');
             }
         }
         // Add event listener to the form for form submission
