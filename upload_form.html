@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload</title>
+</head>
+<body>
+    <h1>Upload Files</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" id="fileInput" name="files" multiple>
+        <button type="submit">Upload</button>
+    </form>
+
+    <script>
+        // Function to handle form submission
+        async function handleSubmit(event) {
+            event.preventDefault(); // Prevent default form submission
+            const form = event.target;
+            const files = form.elements.files.files; // Get selected files
+            const formData = new FormData(); // Create FormData object
+            for (const file of files) {
+                formData.append('files', file); // Append each file to FormData
+            }
+            try {
+                const response = await fetch('/upload/', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (response.ok) {
+                    alert('Files uploaded successfully');
+                } else {
+                    throw new Error('Failed to upload files');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while uploading files');
+            }
+        }
+        // Add event listener to the form for form submission
+        document.getElementById('uploadForm').addEventListener('submit', handleSubmit);
+    </script>
+</body>
+</html>
