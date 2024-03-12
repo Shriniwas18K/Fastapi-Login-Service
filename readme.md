@@ -92,8 +92,8 @@ currently owners can signup and login only
 developed till 12 march 2023
 
 currently tokens are not getting properly validated , even though
-they are valid but control flow does not reach the validation function
-itself,the fastapi server is showing ambigous behaviour here 
+they are valid but control flow does not reach the try block of validation function
+it directly goes to except block
 
 also sqlite queires are causing insertion , and retrieval issues due
 to them being weakly typed
