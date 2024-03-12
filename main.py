@@ -50,7 +50,7 @@ def generate_token():
     '''This function generates a token from currenttimestamp
         which is sent to client frontend, and everytime client
         has to give this token to access any of the owner routes'''
-    generationtimestamp=datetime.strftime(datetime.now(),'%d/%m/%Y, %H:%M:%S')
+    generationtimestamp=datetime.strftime(datetime.now(),"%d/%m/%Y, %H:%M:%S")
     return cryptocode.encrypt(generationtimestamp,secret_key)
 
 def validate_token(token):
@@ -62,10 +62,13 @@ def validate_token(token):
         generationtimestamp=cryptocode.decrypt(token,secret_key)
         generationtimestamp=datetime.strptime(
                                                 generationtimestamp,
-                                                '%d/%m/%Y, %H:%M:%S'
+                                                "%d/%m/%Y, %H:%M:%S"
                                              )
+        print(generationtimestamp)
         currenttimestamp=datetime.now()
         diff=currenttimestamp-generationtimestamp
+        print(diff)
+        print(diff.seconds)
         if(diff.seconds>3600):
             return False
     except:
@@ -155,29 +158,15 @@ fetch(url, {
 })
 '''
 @app.post("/postProperty/")
-async def postProperty(token:str,req:Property):
-    if((validate_token(token))==False):
-        return {"error" : "forbidden action pls login "}
-    cur.execute(f'''select count(*),username from properties
-                where username={req.username}''')
+async def postProperty(token,req:Property):
+    # if((validate_token(token))==False):
+        # return {"error" : "forbidden action pls login "}
+    cur.execute(f"select count(*),username from properties where username={req.username}")
     rows=cur.fetchall();
     if(rows[0][0]==5):
         return {"message" : "limit reached"}
-    cur.execute(f'''
-                insert into properties values(
-                    {int(random.random()*100000)}
-                    {req.username},
-                    {req.address},
-                    {req.pincode},
-                    {req.noOfPeopleToAccomodate},
-                    {req.rentPerPerson},
-                    {req.areaInSqft},
-                    {req.wifiFacility},
-                    {req.furnished},
-                    {req.description},
-                    {datetime.strftime(datetime.now(),
-                                       "%d/%m/%Y, %H:%M:%S")}
-                )''')
+    cur.execute(f"insert into properties values({int(random.random()*100000)},'{req.username}','{req.address}','{req.pincode}','{req.noOfPeopleToAccomodate}','{req.rentPerPerson}','{req.areaInSqft}','{req.wifiFacility}','{req.furnished}','{req.description}','{datetime.strftime(datetime.now(),'%d/%m/%Y, %H:%M:%S')}')")
+    conn.commit()
     return{"message":"post successful"}
 '''to prevent overflow of posts by single user i.e. in a situation
  where same user puts many advertisements for same property in 
@@ -191,10 +180,9 @@ async def postProperty(token:str,req:Property):
 '''****************************************************************
                         VISITOR ROUTES
 ****************************************************************'''
-@app.get("/retrieveProperties/")
+@app.get("/retrieveProperties/{pincode}")
 async def sendProperties(pincode:int):
-    cur.execute(f'''select * from properties where pincode between 
-                    {pincode-2} and {pincode+2}''')
+    cur.execute(f'select * from properties where pincode="{pincode}"')
     rows=cur.fetchall()
     print(rows)
 

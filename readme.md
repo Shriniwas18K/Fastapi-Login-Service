@@ -47,6 +47,16 @@ ____________________________________________
     which will be useful for all further routes involving posting,
     editing,removing properties
 
+
+
+------------------------------------------------------------------
+developed till 11 march 2023
+currently owners can signup and login only 
+------------------------------------------------------------------
+
+
+
+
 3)post a property as owner when logged in and has valid access token
 
     frontend code for this :
@@ -62,7 +72,7 @@ ____________________________________________
 
     request body is:
     {
-        "username": "7894589334",
+        "username": "7894589",
         "address": "123 Main St",
         "pincode": 412434,
         "noOfPeopleToAccomodate": "4",
@@ -72,3 +82,19 @@ ____________________________________________
         "furnished": "Yes",
         "description": "Spacious apartment with modern amenities"
     }
+    response will be
+    {
+     "message": "post successful"
+    }
+
+
+-----------------------------------------------------------------------
+developed till 12 march 2023
+
+currently tokens are not getting properly validated , even though
+they are valid but control flow does not reach the validation function
+itself,the fastapi server is showing ambigous behaviour here 
+
+also sqlite queires are causing insertion , and retrieval issues due
+to them being weakly typed
+-----------------------------------------------------------------------
