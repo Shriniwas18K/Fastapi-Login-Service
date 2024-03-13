@@ -71,12 +71,13 @@ currently owners can signup and login only
         http://127.0.0.1:8000/postProperty/?token=${tokenvalue}
 
     request body is:
-    {
-        "username": "7894589",
+    {   
+        "phone" :8954868665
+        "username": "bergbvetv",
         "address": "123 Main St",
         "pincode": 412434,
-        "noOfPeopleToAccomodate": "4",
-        "rentPerPerson": "500",
+        "noOfPeopleToAccomodate": 4,
+        "rentPerPerson": 500,
         "areaInSqft": 1000.0,
         "wifiFacility": "Yes",
         "furnished": "Yes",
