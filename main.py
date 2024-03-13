@@ -5,31 +5,69 @@ import uuid
 import random
 from datetime import datetime
 secret_key="r9m330924mc2059m205052cm5205"
-import sqlite3
-db_name="auth.db"
-conn=sqlite3.connect(db_name)
-cur=conn.cursor()
+
+
+'''********************************************************************
+                    database connection and set up
+'''
+import psycopg2
+try:
+    connection = psycopg2.connect(
+        user="postgres",
+        password="HHDbAgqDkNkwiTgrmsBWEgxKBliGffbF",
+        host="roundhouse.proxy.rlwy.net",
+        port="37139",
+        database="railway"
+    )
+    print("database connected successfully")
+    cur = connection.cursor()
+except (Exception, psycopg2.Error) as error:
+    print("Error while connecting to PostgreSQL:", error)
 cur.execute(
-    "create table if not exists credentials(username,password)"
+    '''
+    create table if not exists credentials(
+        phone varchar(10),
+        username varchar(20),
+        password varchar(10),
+        createdOn timestamp
+    )
+    '''
 )
 cur.execute(
     '''create table if not exists properties
-        (pid,username,address,pincode,
-         noOfPeopleToAccomodate,rentPerPerson,
-         areaInSqft,wifiFacility,
-         furnished,description,postedOn)'''
+        (
+         pid varchar(6),
+         username varchar(20),
+         phone varchar(10),
+         address varchar(200),
+         pincode integer,
+         noOfPeopleToAccomodate integer,
+         rentPerPerson integer,
+         areaInSqft float,
+         wifiFacility varchar(3),
+         furnished varchar(3),
+         description varchar(200),
+         postedOn timestamp
+        )'''
 )
+connection.commit()
+'''*********************************************************************'''
+
+
+
+'''request models are given below'''
 from pydantic import BaseModel
 class loginsignup(BaseModel):
-    username:str
+    phone:str
     password:str
 
 class Property(BaseModel):
     username:str
+    phone:str
     address:str
     pincode:int
-    noOfPeopleToAccomodate:str
-    rentPerPerson:str
+    noOfPeopleToAccomodate:int
+    rentPerPerson:int
     areaInSqft:float
     wifiFacility:str
     furnished:str
@@ -50,7 +88,7 @@ def generate_token():
     '''This function generates a token from currenttimestamp
         which is sent to client frontend, and everytime client
         has to give this token to access any of the owner routes'''
-    generationtimestamp=datetime.strftime(datetime.now(),"%d/%m/%Y, %H:%M:%S")
+    generationtimestamp=datetime.strftime(datetime.now(),"%Y-%m-%d %H:%M:%S")
     return cryptocode.encrypt(generationtimestamp,secret_key)
 
 def validate_token(token):
@@ -62,7 +100,7 @@ def validate_token(token):
         generationtimestamp=cryptocode.decrypt(token,secret_key)
         generationtimestamp=datetime.strptime(
                                                 generationtimestamp,
-                                                "%d/%m/%Y, %H:%M:%S"
+                                                "%Y-%m-%d %H:%M:%S"
                                              )
         print(generationtimestamp)
         currenttimestamp=datetime.now()
@@ -84,8 +122,12 @@ async def signup(requ:loginsignup):
             "message":"user already exists try to login"
         }
     else:
-        cur.execute(f'''insert into credentials values ({requ.username},
-                    {requ.password})''')
+        cur.execute(f'''insert into credentials values (
+                    {requ.phone},
+                    '{requ.username}',
+                    '{requ.password}',
+                    '{datetime.strftime(datetime.now(),"%Y-%m-%d %H:%M:%S")}'
+                    )''')
         return {
             "message":"user created"
         }
@@ -94,7 +136,7 @@ async def signup(requ:loginsignup):
 async def login(requ:loginsignup):
     '''function will check wheter username exists in database'''
     cur.execute(
-        f"select * from credentials where username={requ.username}"
+        f"select * from credentials where phone={requ.phone}"
     )
     rows=cur.fetchall()
     if(rows==[]):
@@ -125,15 +167,16 @@ async def login(requ:loginsignup):
 // is put in the frontend
 
 const propertyDetails = {
-    "username":"95469895468",
+    "phone": 6674566753,
+    "username":"sdfhyyuyfth",
     "address": "123 Main St",
     "pincode": 412434,
-    "noOfPeopleToAccomodate": "4",
-    "rentPerPerson": "500",
+    "noOfPeopleToAccomodate": 4,
+    "rentPerPerson": 500,
     "areaInSqft": 1000.0,
     "wifiFacility": "Yes",
     "furnished": "Yes",
-    description: "Spacious apartment with modern amenities"
+    "description": "Spacious apartment with modern amenities"
 };
 
 // Define the token
@@ -165,8 +208,8 @@ async def postProperty(token,req:Property):
     rows=cur.fetchall();
     if(rows[0][0]==5):
         return {"message" : "limit reached"}
-    cur.execute(f"insert into properties values({int(random.random()*100000)},'{req.username}','{req.address}','{req.pincode}','{req.noOfPeopleToAccomodate}','{req.rentPerPerson}','{req.areaInSqft}','{req.wifiFacility}','{req.furnished}','{req.description}','{datetime.strftime(datetime.now(),'%d/%m/%Y, %H:%M:%S')}')")
-    conn.commit()
+    cur.execute(f"insert into properties values({int(random.random()*100000)},{req.phone},'{req.username}','{req.address}',{req.pincode},{req.noOfPeopleToAccomodate},{req.rentPerPerson},{req.areaInSqft},'{req.wifiFacility}','{req.furnished}','{req.description}','{datetime.strftime(datetime.now(),'%Y-%m-%d %H:%M:%S')}')")
+    connection.commit()
     return{"message":"post successful"}
 '''to prevent overflow of posts by single user i.e. in a situation
  where same user puts many advertisements for same property in 
@@ -182,7 +225,7 @@ async def postProperty(token,req:Property):
 ****************************************************************'''
 @app.get("/retrieveProperties/{pincode}")
 async def sendProperties(pincode:int):
-    cur.execute(f'select * from properties where pincode="{pincode}"')
+    cur.execute(f'select * from properties where pincode between {pincode-2} and {pincode+2}')
     rows=cur.fetchall()
     print(rows)
 
