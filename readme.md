@@ -4,16 +4,16 @@ ____________________________________________
         Owners special instructions 
 ____________________________________________
 
-1) sign up with username and password
+1) sign up with phone,username and password
 
     POST request to
             http://127.0.0.1:8000/signup/
     request body will be json
-    {
-        "username":"7894589334",
-        "password":"9056954690"
+     {   
+          "phone" : 8954868665,
+          "username": "bergbvetv",
+          "password": "9056954690"
     }
-
     response returned will be 
     {
         "message": "user created"
@@ -25,19 +25,20 @@ ____________________________________________
         "message": "user already exists try to login"
     }
 
-2) login with that username and password
+2) login with that phone,username and password
 
     GET request to
             http://127.0.0.1:8000/login/
     request body will be json
-        {
-          "username":"7894589334",
-          "password":"9056954690"
+        {   
+          "phone" : 8954868665,
+          "username": "bergbvetv",
+          "password": "9056954690"
         }
     
     response returned will be
     {
-         "token": 
+         "token": "Uuxt6MjEFEL2VYqK0T8YybZiIWU=*hl+75Qq/xtAaUktrCXtA3Q==*6DJ4ExTU/  c0J6EeH/xyEMA==*LvXtk0D8jealdGc3NU2oGg=="
     }
     this is authentication token which will be valid for 1 hour only
     this will be stored at frontend , and will be sent for routes
@@ -72,7 +73,7 @@ currently owners can signup and login only
 
     request body is:
     {   
-        "phone" :8954868665
+        "phone" : "8954868665"
         "username": "bergbvetv",
         "address": "123 Main St",
         "pincode": 412434,

@@ -1,10 +1,13 @@
 from fastapi import FastAPI
 app=FastAPI()
-import cryptocode
 import uuid
 import random
 from datetime import datetime
-secret_key="r9m330924mc2059m205052cm5205"
+from cryptography.fernet import Fernet
+# Generate a key
+# key = Fernet.generate_key()
+key=b'B8rPRkgG8ZuBIEIX5z-Auu9qB59jvFdVkJOIXbdlZ6I='
+cipher = Fernet(key)
 
 
 '''********************************************************************
@@ -50,6 +53,13 @@ cur.execute(
          postedOn timestamp
         )'''
 )
+cur.execute('''
+    create table if not exists transactions(
+        atTime timestamp,
+        phone varchar(10),
+        description varchar(30)
+    )
+''')
 connection.commit()
 '''*********************************************************************'''
 
@@ -59,6 +69,7 @@ connection.commit()
 from pydantic import BaseModel
 class loginsignup(BaseModel):
     phone:str
+    username:str
     password:str
 
 class Property(BaseModel):
@@ -88,25 +99,22 @@ def generate_token():
     '''This function generates a token from currenttimestamp
         which is sent to client frontend, and everytime client
         has to give this token to access any of the owner routes'''
-    generationtimestamp=datetime.strftime(datetime.now(),"%Y-%m-%d %H:%M:%S")
-    return cryptocode.encrypt(generationtimestamp,secret_key)
+    generationtimestamp=datetime.now().strftime("%Y-%m-%d %H:%M:%S").encode()
+    return cipher.encrypt(generationtimestamp)
 
-def validate_token(token):
+def validate_token(tokenvalue):
     ''' This function checks the validity of the token ,
         one client can use one token on
         one device only for 1 hour, else token will be expired 
         and session will be inactive'''
     try:
-        generationtimestamp=cryptocode.decrypt(token,secret_key)
+        generationtimestamp=cipher.decrypt(tokenvalue)
         generationtimestamp=datetime.strptime(
-                                                generationtimestamp,
+                                                generationtimestamp.decode(),
                                                 "%Y-%m-%d %H:%M:%S"
                                              )
-        print(generationtimestamp)
         currenttimestamp=datetime.now()
         diff=currenttimestamp-generationtimestamp
-        print(diff)
-        print(diff.seconds)
         if(diff.seconds>3600):
             return False
     except:
@@ -115,19 +123,16 @@ def validate_token(token):
 
 @app.post("/signup/")
 async def signup(requ:loginsignup):
-    cur.execute(f"select * from credentials where username={requ.username}")
+    cur.execute(f"select * from credentials where phone='{requ.phone}'")
     rows=cur.fetchall()
     if(len(rows)==1):
         return {
             "message":"user already exists try to login"
         }
     else:
-        cur.execute(f'''insert into credentials values (
-                    {requ.phone},
-                    '{requ.username}',
-                    '{requ.password}',
-                    '{datetime.strftime(datetime.now(),"%Y-%m-%d %H:%M:%S")}'
-                    )''')
+        cur.execute("insert into credentials values (%s,%s,%s,%s)",(requ.phone,requ.username,requ.password,datetime.now()))
+        cur.execute("insert into transactions values(%s,%s,%s)",(datetime.now(),requ.phone,'signup'))
+        connection.commit()
         return {
             "message":"user created"
         }
@@ -135,13 +140,13 @@ async def signup(requ:loginsignup):
 @app.get("/login/")
 async def login(requ:loginsignup):
     '''function will check wheter username exists in database'''
-    cur.execute(
-        f"select * from credentials where phone={requ.phone}"
-    )
+    cur.execute("select * from credentials where phone=%s",(requ.phone,))
     rows=cur.fetchall()
     if(rows==[]):
         return { "message" : "user does not exists pls sign up"}
     else:
+        cur.execute("insert into transactions values(%s,%s,%s)",(datetime.now(),requ.phone,'login'))
+        connection.commit()
         '''if exists then we return him token'''
         return{"token":generate_token()}
 
@@ -167,7 +172,7 @@ async def login(requ:loginsignup):
 // is put in the frontend
 
 const propertyDetails = {
-    "phone": 6674566753,
+    "phone": "6674566753",
     "username":"sdfhyyuyfth",
     "address": "123 Main St",
     "pincode": 412434,
@@ -202,13 +207,21 @@ fetch(url, {
 '''
 @app.post("/postProperty/")
 async def postProperty(token,req:Property):
-    # if((validate_token(token))==False):
-        # return {"error" : "forbidden action pls login "}
-    cur.execute(f"select count(*),username from properties where username={req.username}")
+    if((validate_token(token))==False):
+        return {"error" : "forbidden action pls login "}
+    cur.execute(f"select count(*),username from properties where username='{req.username}' group by username")
     rows=cur.fetchall();
-    if(rows[0][0]==5):
-        return {"message" : "limit reached"}
-    cur.execute(f"insert into properties values({int(random.random()*100000)},{req.phone},'{req.username}','{req.address}',{req.pincode},{req.noOfPeopleToAccomodate},{req.rentPerPerson},{req.areaInSqft},'{req.wifiFacility}','{req.furnished}','{req.description}','{datetime.strftime(datetime.now(),'%Y-%m-%d %H:%M:%S')}')")
+    try:
+        if(rows[0][0]==5):
+            return {"message" : "limit reached"}
+    except: pass
+    propertypid=int(random.random()*100000)
+    cur.execute("insert into properties values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                (propertypid,req.phone,req.username,req.address,req.pincode,
+                 req.noOfPeopleToAccomodate,req.rentPerPerson,req.areaInSqft,
+                 req.wifiFacility,req.furnished,req.description)
+    )
+    cur.execute("insert into transactions values(%s,%s,%s)",(datetime.now(),req.phone,'new property posted'))
     connection.commit()
     return{"message":"post successful"}
 '''to prevent overflow of posts by single user i.e. in a situation
@@ -227,5 +240,5 @@ async def postProperty(token,req:Property):
 async def sendProperties(pincode:int):
     cur.execute(f'select * from properties where pincode between {pincode-2} and {pincode+2}')
     rows=cur.fetchall()
-    print(rows)
+    return rows
 
