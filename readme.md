@@ -22,13 +22,13 @@ ____________________________________________
     Signup occurs only once , if tried again then 
     response returned will be
     {
-        "message": "user already exists try to login"
+        "message": "user already exists try to signin"
     }
 
-2) login with that phone,username and password
+2) signin with that phone,username and password
 
     GET request to
-            http://127.0.0.1:8000/login/
+            http://127.0.0.1:8000/signin/
     request body will be json
         {   
           "phone" : 8954868665,
@@ -52,7 +52,7 @@ ____________________________________________
 
 ------------------------------------------------------------------
 developed till 11 march 2023
-currently owners can signup and login only 
+currently owners can signup and signin only 
 ------------------------------------------------------------------
 
 

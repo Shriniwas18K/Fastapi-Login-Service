@@ -1,5 +1,14 @@
 from fastapi import FastAPI
-app=FastAPI()
+from fastapi.middleware.cors import CORSMiddleware
+app = FastAPI()
+# Configure CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["*"],
+)
 import uuid
 import random
 from datetime import datetime
@@ -67,7 +76,7 @@ connection.commit()
 
 '''request models are given below'''
 from pydantic import BaseModel
-class loginsignup(BaseModel):
+class signinsignup(BaseModel):
     phone:str
     username:str
     password:str
@@ -92,7 +101,7 @@ class Property(BaseModel):
 
 '''*********************************************************
     below given are authentication and token generation 
-        validation , login signup routes
+        validation , signin signup routes
 *********************************************************'''
 
 def generate_token():
@@ -122,12 +131,12 @@ def validate_token(tokenvalue):
     return True
 
 @app.post("/signup/")
-async def signup(requ:loginsignup):
+async def signup(requ:signinsignup):
     cur.execute(f"select * from credentials where phone='{requ.phone}'")
     rows=cur.fetchall()
     if(len(rows)==1):
         return {
-            "message":"user already exists try to login"
+            "message":"user already exists try to signin"
         }
     else:
         cur.execute("insert into credentials values (%s,%s,%s,%s)",(requ.phone,requ.username,requ.password,datetime.now()))
@@ -137,15 +146,15 @@ async def signup(requ:loginsignup):
             "message":"user created"
         }
     
-@app.get("/login/")
-async def login(requ:loginsignup):
+@app.get("/signin/")
+async def signin(requ:signinsignup):
     '''function will check wheter username exists in database'''
     cur.execute("select * from credentials where phone=%s",(requ.phone,))
     rows=cur.fetchall()
     if(rows==[]):
         return { "message" : "user does not exists pls sign up"}
     else:
-        cur.execute("insert into transactions values(%s,%s,%s)",(datetime.now(),requ.phone,'login'))
+        cur.execute("insert into transactions values(%s,%s,%s)",(datetime.now(),requ.phone,'signin'))
         connection.commit()
         '''if exists then we return him token'''
         return{"token":generate_token()}
@@ -208,7 +217,7 @@ fetch(url, {
 @app.post("/postProperty/")
 async def postProperty(token,req:Property):
     if((validate_token(token))==False):
-        return {"error" : "forbidden action pls login "}
+        return {"error" : "forbidden action pls signin "}
     cur.execute(f"select count(*),username from properties where username='{req.username}' group by username")
     rows=cur.fetchall();
     try:
