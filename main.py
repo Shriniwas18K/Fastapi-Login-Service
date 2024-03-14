@@ -146,7 +146,7 @@ async def signup(requ:signinsignup):
             "message":"user created"
         }
     
-@app.get("/signin/")
+@app.post("/signin/")
 async def signin(requ:signinsignup):
     '''function will check wheter username exists in database'''
     cur.execute("select * from credentials where phone=%s",(requ.phone,))
@@ -225,10 +225,10 @@ async def postProperty(token,req:Property):
             return {"message" : "limit reached"}
     except: pass
     propertypid=int(random.random()*100000)
-    cur.execute("insert into properties values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+    cur.execute("insert into properties values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
                 (propertypid,req.phone,req.username,req.address,req.pincode,
                  req.noOfPeopleToAccomodate,req.rentPerPerson,req.areaInSqft,
-                 req.wifiFacility,req.furnished,req.description)
+                 req.wifiFacility,req.furnished,req.description,datetime.now())
     )
     cur.execute("insert into transactions values(%s,%s,%s)",(datetime.now(),req.phone,'new property posted'))
     connection.commit()
