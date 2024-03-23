@@ -262,3 +262,5 @@ async def sendProperties(pincode:int):
     rows=cur.fetchall()
     return rows
 
+
+
