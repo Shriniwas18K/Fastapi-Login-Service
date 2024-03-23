@@ -27,7 +27,7 @@ try:
     connection = psycopg2.connect(
         user="smpg_user",
         password="2Xdoq5FaqitBiCbvl1A7FTubPBeiONw",
-        host="dpg-cnv79bla73kc7fokg-a",
+        host="dpg-cnv79bla73kc73c7fokg-a",
         port="5432",
         database="smpg"
     )
@@ -58,6 +58,9 @@ cur.execute(
          areaInSqft float,
          wifiFacility varchar(200),
          furnished varchar(200),
+         url1 varchar(500),
+         url2 varchar(500),
+         url3 varchar(500),
          description varchar(200),
          postedOn timestamp
         )'''
@@ -91,6 +94,9 @@ class Property(BaseModel):
     areaInSqft:float
     wifiFacility:str
     furnished:str
+    url1:str
+    url2:str
+    url3:str
     description:str
 
 
@@ -190,6 +196,9 @@ const propertyDetails = {
     "areaInSqft": 1000.0,
     "wifiFacility": "Yes",
     "furnished": "Yes",
+    "url1": "https://ashfdvjk"
+    "url2": "https://kjsdf"
+    "url3": "https://hslkdfjhiwe"
     "description": "Spacious apartment with modern amenities"
 };
 
@@ -225,10 +234,12 @@ async def postProperty(token,req:Property):
             return {"message" : "limit reached"}
     except: pass
     propertypid=int(random.random()*100000)
-    cur.execute("insert into properties values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+    cur.execute("insert into properties values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
                 (propertypid,req.phone,req.username,req.address,req.pincode,
                  req.noOfPeopleToAccomodate,req.rentPerPerson,req.areaInSqft,
-                 req.wifiFacility,req.furnished,req.description,datetime.now())
+                 req.wifiFacility,req.furnished,
+                 req.url1, req.url2, req.ur3,
+                 req.description,datetime.now())
     )
     cur.execute("insert into transactions values(%s,%s,%s)",(datetime.now(),req.phone,'new property posted'))
     connection.commit()
