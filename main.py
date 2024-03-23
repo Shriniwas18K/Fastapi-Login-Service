@@ -17,7 +17,7 @@ from cryptography.fernet import Fernet
 # key = Fernet.generate_key()
 key=b'B8rPRkgG8ZuBIEIX5z-Auu9qB59jvFdVkJOIXbdlZ6I='
 cipher = Fernet(key)
-
+print("he")
 
 '''********************************************************************
                     database connection and set up
@@ -28,7 +28,7 @@ try:
         user="smpg_user",
         password="2Xdoq5FaqitBiCbvl1A7FTubpPBeiONw",
         host="dpg-cnv79bla73kc73c7fokg-a",
-        port="5432",
+        port=5432,
         database="smpg"
     )
     print("database connected successfully")
