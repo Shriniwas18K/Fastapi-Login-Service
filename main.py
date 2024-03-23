@@ -25,11 +25,11 @@ cipher = Fernet(key)
 import psycopg2
 try:
     connection = psycopg2.connect(
-        user="postgres",
-        password="HHDbAgqDkNkwiTgrmsBWEgxKBliGffbF",
-        host="roundhouse.proxy.rlwy.net",
-        port="37139",
-        database="railway"
+        user="smpg_user",
+        password="2Xdoq5FaqitBiCbvl1A7FTubPBeiONw",
+        host="dpg-cnv79bla73kc7fokg-a",
+        port="5432",
+        database="smpg"
     )
     print("database connected successfully")
     cur = connection.cursor()
@@ -56,8 +56,8 @@ cur.execute(
          noOfPeopleToAccomodate integer,
          rentPerPerson integer,
          areaInSqft float,
-         wifiFacility varchar(3),
-         furnished varchar(3),
+         wifiFacility varchar(200),
+         furnished varchar(200),
          description varchar(200),
          postedOn timestamp
         )'''
