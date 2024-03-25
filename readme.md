@@ -27,7 +27,7 @@ ____________________________________________
 
 2) signin with that phone,username and password
 
-    GET request to
+    POST request to
             http://127.0.0.1:8000/signin/
     request body will be json
         {   
