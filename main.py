@@ -91,7 +91,7 @@ class Property(BaseModel):
     pincode:int
     noOfPeopleToAccomodate:int
     rentPerPerson:int
-    areaInSqft:float
+    areaInSqft:int
     wifiFacility:str
     furnished:str
     url1:str
