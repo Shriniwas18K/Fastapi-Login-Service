@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import random
 app = FastAPI()
 # Configure CORS middleware
 app.add_middleware(
@@ -9,8 +10,6 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],
 )
-import uuid
-import random
 from datetime import datetime
 from cryptography.fernet import Fernet
 # Generate a key
@@ -26,13 +25,14 @@ import psycopg2
 try:
     connection = psycopg2.connect(
         user="postgres",
-        password="HHDbAgqDkNkwiTgrmsBWEgxKBliGffbF",
-        host="roundhouse.proxy.rlwy.net",
-        port="37139",
+        password="WtDEHOANEnCJAiHBkBanzcIUzGCkplNb",
+        host="monorail.proxy.rlwy.net",
+        port=31171,
         database="railway"
     )
     print("database connected successfully")
-    cur = connection.cursor()
+    cur=connection.cursor()
+
 except (Exception, psycopg2.Error) as error:
     print("Error while connecting to PostgreSQL:", error)
 cur.execute(
@@ -239,6 +239,35 @@ async def postProperty(token,req:Property):
  the number of advertisements sinlge user can put to be as 5,it is
  implemented above'''
 
+class allpropertiesreq(BaseModel):
+    username:str
+    phone:str
+@app.get('/getUserProperties/')
+async def getpropertiesofuser(token:str,req:allpropertiesreq):
+    if(validate_token(token)==False):
+        return {"message":"token expired , pls login again"}
+    cur.execute('select address,url1 from properties where username=%s and phone=%s',(req.username,req.phone))
+    rows=cur.fetchall()
+    return rows
+
+
+
+from fastapi.responses import JSONResponse
+from typing import Annotated
+import uuid,os
+from fastapi import File
+UPLOAD_DIR = "uploaded_images"
+@app.post("/uploadImage/{phn}/{unm}")
+async def create_file(token:str,file: Annotated[bytes, File()],phn,unm):
+    print(file)
+    os.makedirs(UPLOAD_DIR+f'/{phn+unm}/', exist_ok=True)
+    with open(UPLOAD_DIR+f'/{phn+unm}/'+str(uuid.uuid4())+'.png',"wb") as f:
+        f.write(file)
+    return JSONResponse(
+        content={"image_path": UPLOAD_DIR+f'/{phn+unm}/'+str(uuid.uuid4())+'.png'}
+    )
+
+
 
 
 
@@ -250,4 +279,5 @@ async def sendProperties(pincode:int):
     cur.execute(f'select * from properties where pincode between {pincode-2} and {pincode+2}')
     rows=cur.fetchall()
     return rows
+
 
