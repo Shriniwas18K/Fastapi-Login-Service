@@ -238,7 +238,7 @@ async def postProperty(token,req:Property):
                 (propertypid,req.phone,req.username,req.address,req.pincode,
                  req.noOfPeopleToAccomodate,req.rentPerPerson,req.areaInSqft,
                  req.wifiFacility,req.furnished,
-                 req.url1, req.url2, req.ur3,
+                 req.url1, req.url2, req.url3,
                  req.description,datetime.now())
     )
     cur.execute("insert into transactions values(%s,%s,%s)",(datetime.now(),req.phone,'new property posted'))
