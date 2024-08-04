@@ -72,7 +72,7 @@ def generate_token():
 def validate_token(tokenvalue):
     ''' This function checks the validity of the token ,
         one client can use one token on
-        one device only for 1 hour, else token will be expired 
+        one device only for 10 min, else token will be expired 
         and session will be inactive'''
     try:
         generationtimestamp=cipher.decrypt(tokenvalue)
@@ -82,7 +82,7 @@ def validate_token(tokenvalue):
                                              )
         currenttimestamp=datetime.now()
         diff=currenttimestamp-generationtimestamp
-        if(diff.seconds>3600):
+        if(diff.seconds>600):
             return False
     except:
             return False
