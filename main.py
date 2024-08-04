@@ -24,11 +24,11 @@ cipher = Fernet(key)
 import psycopg2
 try:
     connection = psycopg2.connect(
-        user="postgres",
-        password="WtDEHOANEnCJAiHBkBanzcIUzGCkplNb",
-        host="monorail.proxy.rlwy.net",
-        port=31171,
-        database="railway"
+        user="",
+        password="",
+        host="",
+        port="",
+        database=""
     )
     print("database connected successfully")
     cur=connection.cursor()
